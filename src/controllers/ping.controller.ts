@@ -1,4 +1,5 @@
 import {ClassDecoratorFactory, inject, MetadataInspector} from '@loopback/core';
+import {repository} from '@loopback/repository';
 import {
   get, Request,
 
@@ -6,6 +7,7 @@ import {
   response,
   ResponseObject, RestBindings
 } from '@loopback/rest';
+import {CategoryRepository} from '../repositories';
 
 /**
  * OpenAPI response for ping()
@@ -51,7 +53,8 @@ function myClassDecorator(spec: MyClassMetaData): ClassDecorator{
  */
 @myClassDecorator({name: 'code education'})
 export class PingController {
-  constructor(@inject(RestBindings.Http.REQUEST) private req: Request) {}
+  constructor(@inject(RestBindings.Http.REQUEST) private req: Request,
+  @repository(CategoryRepository) private categoryRepo: CategoryRepository) {}
 
   // Map to `GET /ping`
   @get('/ping')
@@ -64,6 +67,21 @@ export class PingController {
       url: this.req.url,
       headers: Object.assign({}, this.req.headers),
     };
+  }
+
+  @get('/categories')
+  index(){
+    return this.categoryRepo.find()
+  }
+
+  @get('/categories/create')
+  async store(){
+    await this.categoryRepo.create({
+      id: '1',
+      name: 'minha primeira categoria',
+      description: 'minha descrição'
+    })
+    return this.categoryRepo.find()
   }
 }
 

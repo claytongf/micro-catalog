@@ -1,4 +1,4 @@
-import {inject, lifeCycleObserver, LifeCycleObserver} from '@loopback/core';
+import {lifeCycleObserver, LifeCycleObserver} from '@loopback/core';
 import {juggler} from '@loopback/repository';
 
 const config = {
@@ -6,6 +6,7 @@ const config = {
   connector: 'esv6',
   index: 'catalog',
   version: 7,
+  debug: process.env.APP_ENV === 'dev',
   // defaultSize: '',
   configuration: {
     node: process.env.ELASTIC_SEARCH_HOST,
@@ -20,6 +21,15 @@ const config = {
       type: 'keyword',
     },
     name: {
+      type: 'text',
+      fields: {
+        keyword: {
+          type: 'keyword',
+          ignore_above: 256,
+        },
+      },
+    },
+    description: {
       type: 'text',
       fields: {
         keyword: {
@@ -50,11 +60,7 @@ export class Esv7DataSource extends juggler.DataSource
   static dataSourceName = 'esv7';
   static readonly defaultConfig = config;
 
-  constructor(
-    @inject('datasources.config.esv7', {optional: true})
-    dsConfig: object = config,
-  ) {
-    console.log('config = ', config);
-    super(dsConfig);
+  constructor() {
+    super(config);
   }
 }
