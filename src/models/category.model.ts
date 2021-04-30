@@ -19,30 +19,30 @@ export class Category extends Entity {
 
     @property({
         type: 'string',
-        required: true,
+        required: false,
     })
-    description: string;
+    description?: string;
 
     @property({
         type: 'boolean',
         require: false,
     })
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    is_active = true;
+    is_active: boolean = true;
 
     @property({
         type: 'date',
         require: true,
     })
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    created_at: string;
+    created_at: Date;
 
     @property({
         type: 'date',
         require: true,
     })
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    updated_at: string;
+    updated_at: Date;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [prop: string]: any;
