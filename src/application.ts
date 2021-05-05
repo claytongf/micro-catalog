@@ -23,7 +23,7 @@ export class MicroCatalogApplication extends BootMixin(
     restServer.static('/', path.join(__dirname, '../public'))
 
     // Customize @loopback/rest-explorer configuration here
-    this.configure(RestExplorerBindings.COMPONENT).to({
+    this.bind(RestExplorerBindings.CONFIG).to({
       path: '/explorer',
     });
     this.component(RestExplorerComponent);
