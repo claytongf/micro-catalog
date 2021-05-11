@@ -80,8 +80,8 @@ export class PingController {
       id: '1',
       name: 'minha primeira categoria',
       description: 'minha descrição',
-      created_at: new Date(),
-      updated_at: new Date()
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     })
     return this.categoryRepo.find()
   }
@@ -92,4 +92,4 @@ const meta = MetadataInspector.getClassMetadata<MyClassMetaData>(
   PingController
 )
 
-console.log(meta);
+// console.log(meta);

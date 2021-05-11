@@ -30,13 +30,7 @@ const config = {
       },
     },
     description: {
-      type: 'text',
-      fields: {
-        keyword: {
-          type: 'keyword',
-          ignore_above: 256,
-        },
-      },
+      type: 'text'
     },
     is_active: {
       type: 'boolean',

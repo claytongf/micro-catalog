@@ -1,6 +1,6 @@
+import './bootstrap';
 import {RestServer} from '@loopback/rest';
 import {ApplicationConfig, MicroCatalogApplication} from './application';
-import './bootstrap';
 
 export * from './application';
 
@@ -34,6 +34,13 @@ if (require.main === module) {
         setServersFromRequest: true,
       },
     },
+    rabbitmq: {
+      uri: process.env.RABBITMQ_URI,
+      // exchanges: [
+      //   {name: 'test1', type:'direct'},
+      //   {name: 'test2', type:'direct'},
+      // ]
+    }
   };
   main(config).catch(err => {
     console.error('Cannot start the application.', err);
