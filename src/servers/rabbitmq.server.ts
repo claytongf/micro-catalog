@@ -28,7 +28,8 @@ export enum ResponseEnum{
 export interface RabbitmqConfig{
   uri: string;
   connOptions?: AmqpConnectionManagerOptions;
-  exchanges?: {name: string, type: string, options?: Options.AssertExchange}[],
+  exchanges?: {name: string, type: string, options?: Options.AssertExchange}[];
+  queues?: {name: string, options?: Options.AssertQueue, exchange?: {name: string, routingKey: string}}[]
   defaultHandlerError?: ResponseEnum
 }
 
@@ -36,7 +37,7 @@ export class RabbitmqServer extends Context implements Server{
   private _listening: boolean;
   private _conn: AmqpConnectionManager
   private _channelManager: ChannelWrapper
-  channel: Channel
+  private maxAttempts = 3
 
   constructor(
     @inject(CoreBindings.APPLICATION_INSTANCE) public app: Application,
@@ -58,6 +59,7 @@ export class RabbitmqServer extends Context implements Server{
       console.log(`Failed to setup the RabbitMQ channel - name: ${name} | error: ${err.message}`);
     })
     await this.setupExchanges()
+    await this.setupQueues()
     await this.bindSubscribers()
   }
 
@@ -69,6 +71,21 @@ export class RabbitmqServer extends Context implements Server{
       await Promise.all(this.config.exchanges.map((exchange) => (
         channel.assertExchange(exchange.name, exchange.type, exchange.options)
       )))
+    })
+  }
+
+  private async setupQueues(){
+    return this.channelManager.addSetup(async (channel: ConfirmChannel) => {
+      if(!this.config.queues){
+        return;
+      }
+      await Promise.all(this.config.queues.map(async (queue) => {
+        await channel.assertQueue(queue.name, queue.options);
+        if(!queue.exchange){
+          return;
+        }
+        await channel.bindQueue(queue.name, queue.exchange.name, queue.exchange.routingKey)
+      }))
     })
   }
 
@@ -141,7 +158,10 @@ export class RabbitmqServer extends Context implements Server{
           this.dispatchResponse(channel, message, responseType)
         }
       } catch (e) {
-        console.error(e);
+        console.error(e, {
+          routingKey: message?.fields.routingKey,
+          content: message?.content.toString()
+        });
         if(!message){
           return;
         }
@@ -156,11 +176,34 @@ export class RabbitmqServer extends Context implements Server{
         channel.nack(message, false, true)
         break;
       case ResponseEnum.NACK:
-        channel.nack(message, false, false)
+        this.handleNack({channel, message})
         break;
       case ResponseEnum.ACK:
       default:
         channel.ack(message);
+    }
+  }
+
+  canDeadLetter({channel, message}:{channel: Channel, message: Message}){
+    if(message.properties.headers && 'x-death' in message.properties.headers){
+      const count = message.properties.headers['x-death']![0].count;
+      if(count >= this.maxAttempts){
+        channel.ack(message)
+        const queue = message.properties.headers['x-death']![0].queue;
+        console.error(`Ack in ${queue} with error. Max attempts exceeded: ${this.maxAttempts}`)
+        return false
+      }
+    }
+    return true
+  }
+
+  handleNack({channel, message}:{channel: Channel, message: Message}){
+    const canDeadLetter = this.canDeadLetter({channel, message})
+    if(canDeadLetter){
+      console.log('Nack in message', {content: message.content.toString()});
+      channel.nack(message, false, false)
+    }else{
+      channel.ack(message);
     }
   }
 
