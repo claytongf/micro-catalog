@@ -3,12 +3,12 @@ import {getJsonSchema} from '@loopback/repository-json-schema';
 import {clone} from 'lodash';
 
 export abstract class DefaultFilter<MT extends object = AnyObject> extends FilterBuilder<MT>{
-  dFilter: Filter<MT> | null
+  defaultWhere: Where<MT> | null | undefined
   constructor(f?: Filter<MT>) {
     super(f)
     const dFilter = this.defaultFilter()
-    this.dFilter = dFilter ? clone(dFilter.filter) : null
-    this.filter = {}
+    this.defaultWhere = dFilter ? clone(dFilter.filter.where) : null
+    this.filter.where = {}
   }
 
   protected defaultFilter(): DefaultFilter<MT> | void {}
@@ -46,20 +46,17 @@ export abstract class DefaultFilter<MT extends object = AnyObject> extends Filte
       return this
     }
 
-    const fields = matches.map(m => {
-      const relation = m.split('.')[0] // categories
-      return {[`${relation}.is_active`]: true}
+    const fields = matches.map((m) => {
+      const r = m.split('.')[0];
+      return {[`${r}.is_active`]: true}
     })
     this.filter.where = new WhereBuilder<{is_active: boolean}>(this.filter.where)
       .and(fields)
       .build() as Where<MT>
     return this
-
-
-
   }
 
   build(){
-    return this.dFilter ? this.impose(this.dFilter).filter : this.filter
+    return this.defaultWhere ? this.impose(this.defaultWhere).filter : this.filter
   }
 }
