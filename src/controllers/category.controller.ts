@@ -49,7 +49,7 @@ export class CategoryController {
   async find(
     @param.filter(Category) filter?: Filter<Category>,
   ): Promise<PaginatorSerializer<Category>> {
-    let newFilter = new CategoryFilterBuilder(filter).build()
+    const newFilter = new CategoryFilterBuilder(filter).build()
     return this.categoryRepository.paginate(newFilter);
   }
 

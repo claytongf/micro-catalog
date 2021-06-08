@@ -1,5 +1,6 @@
 import {lifeCycleObserver, LifeCycleObserver} from '@loopback/core';
 import {juggler} from '@loopback/repository';
+import {Client} from 'es7'
 
 const config = {
   name: 'esv7',
@@ -107,5 +108,16 @@ export class Esv7DataSource extends juggler.DataSource
 
   constructor() {
     super(config);
+  }
+
+  public async deleteAllDocuments(){
+    const index = (this as any).adapter.settings.index
+    const client: Client = (this as any).adapter.db
+    await client.deleteByQuery({
+      index,
+      body: {
+        query: {match_all: {}}
+      }
+    })
   }
 }

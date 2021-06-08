@@ -1,4 +1,4 @@
-import {DefaultCrudRepository, Entity, Filter, Options, relation} from '@loopback/repository';
+import {DefaultCrudRepository, Entity, Filter, Options} from '@loopback/repository';
 import {Client} from 'es6'
 import {pick} from 'lodash';
 import {PaginatorSerializer} from '../utils/paginator';

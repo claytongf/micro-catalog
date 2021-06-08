@@ -1,6 +1,6 @@
 import {Client, givenHttpServerConfig} from '@loopback/testlab';
 import {MicroCatalogApplication} from '../..';
-import * as config from '../../config'
+import {config} from '../../config'
 import supertest from 'supertest'
 
 export async function setupApplication(): Promise<AppWithClient> {

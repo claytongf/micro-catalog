@@ -59,7 +59,7 @@ export abstract class BaseModelSyncService {
       entityClass: repo.entityClass,
       ...(exists && {options: {partial: true}})
     })
-    return exists ? await repo.updateById(id, entity) : await repo.create(entity)
+    return exists ? repo.updateById(id, entity) : repo.create(entity)
   }
 
   async syncRelation({id, relationName, repo, relationIds, relationRepo, message}:SyncRelationOptions){
